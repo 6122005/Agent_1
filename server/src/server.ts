@@ -3,6 +3,7 @@ import { app } from './app.js';
 import { env } from './config/env.js';
 import { logger } from './utils/logger.js';
 import { summaryScheduler } from './jobs/summaryJobs.js';
+import { reminderScheduler } from './jobs/reminderJobs.js';
 
 async function bootstrap() {
   let mongoUri = env.MONGODB_URI;
@@ -30,11 +31,12 @@ async function bootstrap() {
     logger.error(`Could not connect to MongoDB: ${err.message}. Please provide a valid MONGODB_URI in .env.`);
   }
 
-  // Start background schedulers (node-cron for morning/evening summaries)
+  // Start background schedulers (node-cron for summaries & proactive reminders)
   try {
     summaryScheduler.start();
+    reminderScheduler.start();
   } catch (err: any) {
-    logger.error('Failed to start summary scheduler', { error: err.message });
+    logger.error('Failed to start schedulers', { error: err.message });
   }
 
   // Start Telegram bot polling if token is configured

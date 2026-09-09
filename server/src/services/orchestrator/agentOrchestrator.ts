@@ -200,19 +200,70 @@ export class AgentOrchestrator {
 
       case 'create_event': {
         try {
-          // Calculate start & end
-          const start = new Date(Date.now() + 2 * 60 * 60 * 1000); // 2 hours from now
-          const end = new Date(start.getTime() + 45 * 60 * 1000);
-          const title = intentResult.entities?.title || trimmed;
+          // Parse event title, timing, and reminder lead time
+          let title = intentResult.entities?.title || trimmed;
+          title = title.replace(/^(?:schedule\s+meeting:?|create\s+event:?|book\s+meeting:?|meeting:?)\s*/i, '').trim();
+
+          // 1. Relative or specific start time (e.g. "in 10 minutes")
+          let start = new Date(Date.now() + 2 * 60 * 60 * 1000); // default 2 hours
+          const relMinMatch = trimmed.match(/(?:in|after)\s+(\d+)\s*(?:minutes?|mins?)\b/i);
+          if (relMinMatch) {
+            const mins = parseInt(relMinMatch[1], 10);
+            start = new Date(Date.now() + mins * 60 * 1000);
+            title = title.replace(relMinMatch[0], '').trim();
+          } else {
+            const relHrMatch = trimmed.match(/(?:in|after)\s+(\d+)\s*(?:hours?|hrs?)\b/i);
+            if (relHrMatch) {
+              const hrs = parseInt(relHrMatch[1], 10);
+              start = new Date(Date.now() + hrs * 60 * 60 * 1000);
+              title = title.replace(relHrMatch[0], '').trim();
+            } else {
+              const atTimeMatch = trimmed.match(/\bat\s+(\d{1,2}):(\d{2})(?:\s*(am|pm))?\b/i);
+              if (atTimeMatch) {
+                let hrs = parseInt(atTimeMatch[1], 10);
+                const mins = parseInt(atTimeMatch[2], 10);
+                const ampm = atTimeMatch[3]?.toLowerCase();
+                if (ampm === 'pm' && hrs < 12) hrs += 12;
+                if (ampm === 'am' && hrs === 12) hrs = 0;
+                const target = new Date();
+                target.setHours(hrs, mins, 0, 0);
+                if (target.getTime() < Date.now()) target.setDate(target.getDate() + 1);
+                start = target;
+                title = title.replace(atTimeMatch[0], '').trim();
+              }
+            }
+          }
+
+          // 2. Reminder lead time override (default 30 mins)
+          let reminderMinutes = 30;
+          const remMatch = trimmed.match(/(?:(?:with|remind\s+(?:me\s+)?)\s*(\d+)\s*(?:minutes?|mins?)(?:\s*(?:reminder|before))?|(\d+)\s*(?:minutes?|mins?)\s*(?:reminder|before))/i);
+          if (remMatch) {
+            const val = remMatch[1] || remMatch[2];
+            if (val) reminderMinutes = parseInt(val, 10);
+            title = title.replace(remMatch[0], '').trim();
+          } else {
+            const hrRemMatch = trimmed.match(/(?:(?:with|remind\s+(?:me\s+)?)\s*(\d+)\s*(?:hours?|hrs?)(?:\s*(?:reminder|before))?|(\d+)\s*(?:hours?|hrs?)\s*(?:reminder|before))/i);
+            if (hrRemMatch) {
+              const val = hrRemMatch[1] || hrRemMatch[2];
+              if (val) reminderMinutes = parseInt(val, 10) * 60;
+              title = title.replace(hrRemMatch[0], '').trim();
+            }
+          }
+
+          title = title.replace(/\b(?:reminder|before)\b/gi, '').replace(/\s+(?:on|at|for|with|due)\s*$/i, '').replace(/\s+/g, ' ').trim();
+          if (!title) title = 'Executive Meeting';
+
+          const end = new Date(start.getTime() + 30 * 60 * 1000);
 
           const conflicts = await calendarService.checkConflicts(userId, start, end);
           const result = await calendarService.createEvent(userId, {
             summary: title,
             start,
             end,
+            reminderMinutes,
           });
 
-          let response = `📅 *Event Scheduled!*\n\n*Event:* ${title}\n*Time:* ${start.toLocaleTimeString()} - ${end.toLocaleTimeString()}\n*Workspace:* ${workspace.toUpperCase()}`;
+          let response = `📅 *Event Scheduled!*\n\n*Event:* ${title}\n*Time:* ${start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}\n*Workspace:* ${workspace.toUpperCase()}\n🔔 *Google Reminder:* ${reminderMinutes} min before (native popup)`;
           if (conflicts.length > 0) {
             response += `\n\n⚠️ *Warning:* This overlaps with an existing event: "${conflicts[0].summary}".`;
           }
@@ -224,7 +275,7 @@ export class AgentOrchestrator {
             channel,
             workspace,
             status: 'success',
-            details: { title, start, end, hasConflicts: conflicts.length > 0 },
+            details: { title, start, end, reminderMinutes, hasConflicts: conflicts.length > 0 },
           });
 
           return { text: response, actionTaken: 'create_event', data: result };
@@ -253,8 +304,42 @@ export class AgentOrchestrator {
         try {
           let rawTitle = intentResult.entities?.title || trimmed;
           rawTitle = rawTitle.replace(/^(?:add\s+task:?|create\s+task:?|todo:?|remind\s+me\s+to)\s*/i, '').trim();
+
+          let due: Date | undefined;
+          let notes: string | undefined;
+
+          const relMinMatch = trimmed.match(/(?:due\s+in|in)\s+(\d+)\s*(?:min|mins|minute|minutes)\b/i);
+          if (relMinMatch) {
+            const mins = parseInt(relMinMatch[1], 10);
+            due = new Date(Date.now() + mins * 60 * 1000);
+            notes = `Due at ${due.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+            rawTitle = rawTitle.replace(relMinMatch[0], '').trim();
+          } else {
+            const atTimeMatch = trimmed.match(/(?:due\s+at|at)\s+(\d{1,2}):(\d{2})(?:\s*(am|pm))?\b/i);
+            if (atTimeMatch) {
+              let hrs = parseInt(atTimeMatch[1], 10);
+              const mins = parseInt(atTimeMatch[2], 10);
+              const ampm = atTimeMatch[3]?.toLowerCase();
+              if (ampm === 'pm' && hrs < 12) hrs += 12;
+              if (ampm === 'am' && hrs === 12) hrs = 0;
+              const target = new Date();
+              target.setHours(hrs, mins, 0, 0);
+              if (target.getTime() < Date.now()) target.setDate(target.getDate() + 1);
+              due = target;
+              notes = `Due at ${due.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+              rawTitle = rawTitle.replace(atTimeMatch[0], '').trim();
+            }
+          }
+
+          rawTitle = rawTitle.replace(/\s+(?:on|at|for|due|in)\s*$/i, '').trim();
           const title = rawTitle || 'New Task';
-          const task = await tasksService.createTask(userId, { title });
+
+          const task = await tasksService.createTask(userId, {
+            title,
+            due,
+            notes,
+          });
+
           await ActivityLog.create({
             userId,
             actor: 'agent',
@@ -262,10 +347,16 @@ export class AgentOrchestrator {
             channel,
             workspace,
             status: 'success',
-            details: { taskId: task.id, title },
+            details: { taskId: task.id, title, due, notes },
           });
+
+          let responseText = `✅ *Task Added:* "${title}"\n*Workspace:* ${workspace.toUpperCase()}`;
+          if (notes) {
+            responseText += `\n⏰ *Scheduled:* ${notes} (Assistant proactive reminder enabled)`;
+          }
+
           return {
-            text: `✅ *Task Added:* "${title}"\n*Workspace:* ${workspace.toUpperCase()}`,
+            text: responseText,
             actionTaken: 'create_task',
             data: task,
           };

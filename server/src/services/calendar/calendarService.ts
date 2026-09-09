@@ -9,6 +9,7 @@ export interface CalendarEventPayload {
   start: Date | string;
   end: Date | string;
   attendees?: string[];
+  reminderMinutes?: number;
 }
 
 export class CalendarService {
@@ -55,6 +56,7 @@ export class CalendarService {
         start: item.start?.dateTime || item.start?.date,
         end: item.end?.dateTime || item.end?.date,
         attendees: item.attendees?.map((a) => a.email),
+        reminders: item.reminders,
       }));
     });
   }
@@ -63,10 +65,10 @@ export class CalendarService {
    * Checks for overlapping events in the given time window
    */
   async checkConflicts(userId: string, start: Date, end: Date): Promise<any[]> {
-    const existing = await this.listEvents(userId, start, end);
-    const conflicts = existing.filter((event) => {
-      const evStart = new Date(event.start).getTime();
-      const evEnd = new Date(event.end).getTime();
+    const events = await this.listEvents(userId);
+    const conflicts = events.filter((ev) => {
+      const evStart = new Date(ev.start).getTime();
+      const evEnd = new Date(ev.end).getTime();
       const reqStart = start.getTime();
       const reqEnd = end.getTime();
       return reqStart < evEnd && reqEnd > evStart;
@@ -80,32 +82,43 @@ export class CalendarService {
 
     const startDate = new Date(payload.start);
     const endDate = new Date(payload.end);
+    const reminderMinutes = typeof payload.reminderMinutes === 'number' ? payload.reminderMinutes : 30;
 
     const conflicts = await this.checkConflicts(userId, startDate, endDate);
 
     return this.executeWithBackoff(async () => {
+      const requestBody: any = {
+        summary: payload.summary,
+        description: payload.description,
+        location: payload.location,
+        start: { dateTime: startDate.toISOString() },
+        end: { dateTime: endDate.toISOString() },
+        attendees: payload.attendees?.map((email) => ({ email })),
+        reminders: {
+          useDefault: false,
+          overrides: [
+            { method: 'popup', minutes: reminderMinutes },
+          ],
+        },
+      };
+
       const res = await calendar.events.insert({
         calendarId: 'primary',
-        requestBody: {
-          summary: payload.summary,
-          description: payload.description,
-          location: payload.location,
-          start: { dateTime: startDate.toISOString() },
-          end: { dateTime: endDate.toISOString() },
-          attendees: payload.attendees?.map((email) => ({ email })),
-        },
+        requestBody,
       });
 
-      logger.info('Calendar event created successfully', {
+      logger.info('Calendar event created successfully with Google reminder override', {
         userId,
         eventId: res.data.id,
         summary: payload.summary,
+        reminderMinutes,
         hasConflicts: conflicts.length > 0,
       });
 
       return {
         event: res.data,
         conflictsWarning: conflicts.length > 0 ? conflicts : undefined,
+        requestBodySent: requestBody,
       };
     });
   }
