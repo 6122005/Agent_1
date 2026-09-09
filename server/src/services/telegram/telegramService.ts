@@ -2,6 +2,12 @@ import axios from 'axios';
 import { env } from '../../config/env.js';
 import { logger } from '../../utils/logger.js';
 
+export interface TelegramSendResult {
+  success: boolean;
+  messageId?: number;
+  error?: string;
+}
+
 export class TelegramService {
   private botToken = env.TELEGRAM_BOT_TOKEN;
   private isPolling = false;
@@ -22,33 +28,50 @@ export class TelegramService {
     }
   }
 
-  async sendMessage(chatId: string, text: string, parseMode: 'Markdown' | 'HTML' = 'Markdown'): Promise<boolean> {
+  async sendMessage(
+    chatId: string,
+    text: string,
+    parseMode: 'Markdown' | 'HTML' = 'Markdown'
+  ): Promise<TelegramSendResult> {
     if (!this.botToken) {
       logger.warn('TELEGRAM_BOT_TOKEN is not configured. Telegram message logged only.', { chatId, text });
-      return false;
+      return { success: false, error: 'TELEGRAM_BOT_TOKEN not configured' };
     }
 
     try {
-      await axios.post(`${this.apiUrl}/sendMessage`, {
+      const res = await axios.post(`${this.apiUrl}/sendMessage`, {
         chat_id: chatId,
         text,
         parse_mode: parseMode,
       });
-      return true;
+      if (res.data?.ok && res.data?.result?.message_id) {
+        return { success: true, messageId: res.data.result.message_id };
+      }
+      return { success: false, error: 'Telegram API returned ok: false' };
     } catch (err: any) {
-      logger.error('Failed to send Telegram message', {
+      const primaryError = err.response?.data?.description || err.message;
+      logger.warn('Failed to send formatted Telegram message, attempting plain text fallback', {
         chatId,
-        error: err.response?.data || err.message,
+        error: primaryError,
       });
+
       // Fallback without parse_mode if formatting had an unescaped markdown character
       try {
-        await axios.post(`${this.apiUrl}/sendMessage`, {
+        const fallbackRes = await axios.post(`${this.apiUrl}/sendMessage`, {
           chat_id: chatId,
           text,
         });
-        return true;
+        if (fallbackRes.data?.ok && fallbackRes.data?.result?.message_id) {
+          return { success: true, messageId: fallbackRes.data.result.message_id };
+        }
+        return { success: false, error: 'Telegram API fallback returned ok: false' };
       } catch (fallbackErr: any) {
-        return false;
+        const finalError = fallbackErr.response?.data?.description || fallbackErr.message;
+        logger.error('Failed to send Telegram message on all attempts', {
+          chatId,
+          error: finalError,
+        });
+        return { success: false, error: finalError };
       }
     }
   }

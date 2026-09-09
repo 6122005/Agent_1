@@ -12,15 +12,19 @@ async function run() {
   console.log('--- STARTING TELEGRAM SECURITY & ZERO-FALLBACK VERIFICATION ---');
   await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/assistant');
 
-  // Test User A (Jenish Bhesaniya)
-  const userA = await User.findOne({ email: 'bhesaniyajenish06@gmail.com' });
+  // Use isolated test account so real user's Telegram link is never wiped or corrupted
+  let userA = await User.findOne({ email: 'security_test_user@example.com' });
   if (!userA) {
-    throw new Error('User A (Jenish Bhesaniya) not found');
+    userA = await User.create({
+      email: 'security_test_user@example.com',
+      name: 'Security Test Account',
+      role: 'admin',
+    });
   }
 
-  // Clear any existing telegramChatId for User A
+  // Clear any existing telegramChatId for Test Account
   await Setting.updateOne({ userId: userA._id }, { $unset: { telegramChatId: 1 } });
-  await TelegramLinkToken.deleteMany({});
+  await TelegramLinkToken.deleteMany({ userId: userA._id });
 
   const attackerChatId = 'attacker_chat_99999';
 

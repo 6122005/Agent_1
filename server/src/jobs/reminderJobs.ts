@@ -92,49 +92,71 @@ export class ReminderScheduler {
 
         // Deliver to connected Telegram channel first
         if (setting.enabledChannels?.includes('telegram') && setting.telegramChatId) {
-          try {
-            await telegramService.sendMessage(setting.telegramChatId, messageText);
-            channelUsed = 'telegram';
-          } catch (tErr: any) {
-            logger.warn('Failed to send Telegram proactive reminder, falling back to dashboard', { error: tErr.message });
+          const sendResult = await telegramService.sendMessage(setting.telegramChatId, messageText);
+          if (sendResult.success) {
+            // ONLY record in SentReminder and log success if message was verified by Telegram API
+            await SentReminder.create({
+              userId,
+              targetType: 'calendar_event',
+              targetId: ev.id,
+              targetTitle: ev.summary || 'Scheduled Meeting',
+              targetTime: eventStart,
+              channel: 'telegram',
+              sentAt: new Date(),
+            });
+
+            await ActivityLog.create({
+              userId,
+              actor: 'agent',
+              actionType: 'proactive_reminder_sent',
+              channel: 'telegram',
+              workspace: 'business',
+              status: 'success',
+              details: {
+                targetType: 'calendar_event',
+                eventId: ev.id,
+                summary: ev.summary,
+                startsInMinutes: diffMinutes,
+                startTime: eventStart.toISOString(),
+                telegramMessageId: sendResult.messageId,
+              },
+            });
+
+            logger.info('Successfully delivered proactive calendar reminder to Telegram', {
+              userId,
+              eventId: ev.id,
+              summary: ev.summary,
+              messageId: sendResult.messageId,
+            });
+          } else {
+            // Real delivery failed: log failure and DO NOT mark SentReminder (allows retry)
+            await ActivityLog.create({
+              userId,
+              actor: 'agent',
+              actionType: 'proactive_reminder_sent',
+              channel: 'telegram',
+              workspace: 'business',
+              status: 'failed',
+              details: {
+                targetType: 'calendar_event',
+                eventId: ev.id,
+                summary: ev.summary,
+                error: sendResult.error || 'Failed to deliver to Telegram',
+                attemptedChatId: setting.telegramChatId,
+              },
+            });
+
+            logger.error('Failed to deliver proactive calendar reminder to Telegram', {
+              userId,
+              eventId: ev.id,
+              error: sendResult.error,
+              attemptedChatId: setting.telegramChatId,
+            });
           }
+        } else {
+          // No Telegram channel configured - log warning, do not pretend Telegram succeeded
+          logger.warn('User has no telegramChatId configured for calendar reminder', { userId, eventId: ev.id });
         }
-
-        // Record in SentReminder (enforces at most 1 reminder per event)
-        await SentReminder.create({
-          userId,
-          targetType: 'calendar_event',
-          targetId: ev.id,
-          targetTitle: ev.summary || 'Scheduled Meeting',
-          targetTime: eventStart,
-          channel: channelUsed,
-          sentAt: new Date(),
-        });
-
-        // Log in ActivityLog for audit trail & dashboard presence
-        await ActivityLog.create({
-          userId,
-          actor: 'agent',
-          actionType: 'proactive_reminder_sent',
-          channel: channelUsed,
-          workspace: 'business',
-          status: 'success',
-          details: {
-            targetType: 'calendar_event',
-            eventId: ev.id,
-            summary: ev.summary,
-            startsInMinutes: diffMinutes,
-            startTime: eventStart.toISOString(),
-          },
-        });
-
-        logger.info('Dispatched proactive calendar reminder', {
-          userId,
-          eventId: ev.id,
-          summary: ev.summary,
-          channelUsed,
-          diffMinutes,
-        });
       }
     } catch (err: any) {
       // User might not have Google connected or token expired
@@ -202,47 +224,68 @@ export class ReminderScheduler {
           (task.notes ? `*Details:* ${task.notes}\n` : '') +
           `\n_Proactive reminder from your Executive Assistant._`;
 
-        let channelUsed: 'telegram' | 'dashboard' = 'dashboard';
-
         if (setting.enabledChannels?.includes('telegram') && setting.telegramChatId) {
-          try {
-            await telegramService.sendMessage(setting.telegramChatId, messageText);
-            channelUsed = 'telegram';
-          } catch (tErr: any) {
-            logger.warn('Failed to send Telegram task reminder, falling back to dashboard', { error: tErr.message });
+          const sendResult = await telegramService.sendMessage(setting.telegramChatId, messageText);
+          if (sendResult.success) {
+            await SentReminder.create({
+              userId,
+              targetType: 'task',
+              targetId: task.id,
+              targetTitle: task.title,
+              targetTime: dueTime,
+              channel: 'telegram',
+              sentAt: new Date(),
+            });
+
+            await ActivityLog.create({
+              userId,
+              actor: 'agent',
+              actionType: 'proactive_reminder_sent',
+              channel: 'telegram',
+              workspace: 'business',
+              status: 'success',
+              details: {
+                targetType: 'task',
+                taskId: task.id,
+                title: task.title,
+                telegramMessageId: sendResult.messageId,
+              },
+            });
+
+            logger.info('Successfully delivered proactive task reminder to Telegram', {
+              userId,
+              taskId: task.id,
+              title: task.title,
+              messageId: sendResult.messageId,
+            });
+          } else {
+            // Delivery failed: log failure and DO NOT mark SentReminder
+            await ActivityLog.create({
+              userId,
+              actor: 'agent',
+              actionType: 'proactive_reminder_sent',
+              channel: 'telegram',
+              workspace: 'business',
+              status: 'failed',
+              details: {
+                targetType: 'task',
+                taskId: task.id,
+                title: task.title,
+                error: sendResult.error || 'Failed to deliver to Telegram',
+                attemptedChatId: setting.telegramChatId,
+              },
+            });
+
+            logger.error('Failed to deliver proactive task reminder to Telegram', {
+              userId,
+              taskId: task.id,
+              error: sendResult.error,
+              attemptedChatId: setting.telegramChatId,
+            });
           }
+        } else {
+          logger.warn('User has no telegramChatId configured for task reminder', { userId, taskId: task.id });
         }
-
-        await SentReminder.create({
-          userId,
-          targetType: 'task',
-          targetId: task.id,
-          targetTitle: task.title,
-          targetTime: dueTime,
-          channel: channelUsed,
-          sentAt: new Date(),
-        });
-
-        await ActivityLog.create({
-          userId,
-          actor: 'agent',
-          actionType: 'proactive_reminder_sent',
-          channel: channelUsed,
-          workspace: 'business',
-          status: 'success',
-          details: {
-            targetType: 'task',
-            taskId: task.id,
-            title: task.title,
-          },
-        });
-
-        logger.info('Dispatched proactive task reminder', {
-          userId,
-          taskId: task.id,
-          title: task.title,
-          channelUsed,
-        });
       }
     } catch (err: any) {
       logger.debug('Skipping task reminder check for user', { userId, error: err.message });
