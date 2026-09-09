@@ -23,7 +23,7 @@ interface NavbarProps {
   currentTab: NavTab;
   onSelectTab: (tab: NavTab) => void;
   pendingCount: number;
-  googleConnected: boolean;
+  googleConnected?: boolean;
   user?: AuthUser | null;
   onLogout?: () => void;
 }
@@ -32,7 +32,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   currentTab,
   onSelectTab,
   pendingCount,
-  googleConnected,
+  googleConnected: _googleConnected,
   user,
   onLogout,
 }) => {
@@ -114,29 +114,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           </nav>
         </div>
 
-        {/* Bottom Section: Google Sync + User Profile & Logout */}
-        <div className="space-y-3 pt-4 border-t border-slate-800/80">
-          {/* Integration Status footer */}
-          <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800/70">
-            <div className="flex items-center justify-between text-xs mb-1">
-              <span className="text-slate-400 font-medium text-[11px]">Google Services</span>
-              <span
-                className={`inline-flex items-center gap-1.5 text-[11px] font-semibold ${
-                  googleConnected ? 'text-emerald-400' : 'text-rose-400'
-                }`}
-              >
-                <span
-                  className={`w-1.5 h-1.5 rounded-full ${
-                    googleConnected ? 'bg-emerald-400 animate-pulse' : 'bg-rose-400'
-                  }`}
-                />
-                {googleConnected ? 'Connected' : 'Offline'}
-              </span>
-            </div>
-            <p className="text-[10px] text-slate-500 leading-tight truncate">
-              {googleConnected ? 'Gmail, Calendar & Tasks active' : 'Connect via Settings'}
-            </p>
-          </div>
+        {/* Bottom Section: User Profile & Logout */}
+        <div className="pt-4 border-t border-slate-800/80">
 
           {/* User Profile Card */}
           {user && (
