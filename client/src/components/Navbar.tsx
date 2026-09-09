@@ -66,21 +66,21 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <>
       {/* Desktop Sidebar (hidden on mobile/tablet < 1024px) */}
-      <aside className="hidden lg:flex lg:flex-col w-64 bg-slate-900/95 backdrop-blur border-r border-slate-800/80 p-5 shrink-0 justify-between select-none">
+      <aside className="hidden lg:flex lg:flex-col w-64 bg-gradient-to-b from-zinc-900/95 via-zinc-900/90 to-zinc-950/98 backdrop-blur border-r border-white/[0.08] shadow-[inset_-1px_0_0_0_rgba(255,255,255,0.05)] p-5 shrink-0 justify-between select-none">
         <div className="space-y-6">
           {/* Brand header */}
-          <div className="flex items-center gap-3 px-1">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 via-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-sky-500/25 shrink-0">
+          <div className="flex items-center gap-3 px-1 pb-1">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 via-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-sky-500/25 shrink-0 border border-white/10">
               <Bot className="w-5 h-5 text-white" />
             </div>
             <div className="min-w-0">
               <h1 className="font-bold text-sm tracking-tight text-white truncate">Assistant OS</h1>
-              <p className="text-[11px] text-slate-400 font-medium truncate">Executive Real Estate</p>
+              <p className="text-[11px] text-zinc-400 font-medium truncate">Executive Real Estate</p>
             </div>
           </div>
 
           {/* Navigation Links */}
-          <nav className="space-y-1">
+          <nav className="space-y-1.5">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = currentTab === item.id;
@@ -91,14 +91,14 @@ export const Navbar: React.FC<NavbarProps> = ({
                   onClick={() => onSelectTab(item.id)}
                   className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-xs transition-all duration-150 group ${
                     isActive
-                      ? 'bg-sky-500/15 text-sky-300 font-semibold border border-sky-500/30 shadow-sm'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                      ? 'bg-sky-500/15 text-sky-300 font-semibold border border-sky-500/30 shadow-sm shadow-sky-500/10'
+                      : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60'
                   }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <Icon
                       className={`w-4 h-4 shrink-0 transition-colors ${
-                        isActive ? 'text-sky-400' : 'text-slate-400 group-hover:text-slate-200'
+                        isActive ? 'text-sky-400' : 'text-zinc-400 group-hover:text-zinc-200'
                       }`}
                     />
                     <span className="truncate">{item.label}</span>
@@ -114,20 +114,20 @@ export const Navbar: React.FC<NavbarProps> = ({
           </nav>
         </div>
 
-        {/* Bottom Section: Seamless Integrated User Profile & Logout */}
+        {/* Bottom Section: Seamless Attached User Profile & Logout */}
         <div className="pt-3.5 mt-auto border-t border-white/[0.08]">
           {user && (
-            <div className="p-2 rounded-lg hover:bg-zinc-800/40 transition-colors flex items-center justify-between gap-2.5">
+            <div className="p-2 rounded-xl bg-zinc-950/40 border border-white/[0.04] hover:bg-zinc-800/40 hover:border-white/[0.08] transition-all flex items-center justify-between gap-2.5">
               <div className="flex items-center gap-2.5 min-w-0">
                 {user.avatarUrl ? (
                   <img
                     src={user.avatarUrl}
                     alt={user.name}
                     referrerPolicy="no-referrer"
-                    className="w-8 h-8 rounded-lg object-cover border border-white/[0.1] shrink-0"
+                    className="w-8 h-8 rounded-lg object-cover border border-white/10 shrink-0 shadow-sm"
                   />
                 ) : (
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-sky-600 to-indigo-600 text-white font-bold text-xs flex items-center justify-center border border-sky-500/30 shrink-0">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-sky-600 to-indigo-600 text-white font-bold text-xs flex items-center justify-center border border-sky-500/30 shrink-0 shadow-sm">
                     {getInitials(user.name, user.email)}
                   </div>
                 )}
@@ -157,15 +157,15 @@ export const Navbar: React.FC<NavbarProps> = ({
       </aside>
 
       {/* Mobile / Tablet Top Header (screen < 1024px) */}
-      <header className="lg:hidden flex items-center justify-between px-4 py-2.5 bg-slate-900/95 backdrop-blur border-b border-slate-800 sticky top-0 z-30 min-h-[52px]">
+      <header className="lg:hidden flex items-center justify-between px-4 py-2.5 bg-zinc-900/95 backdrop-blur border-b border-white/[0.08] sticky top-0 z-30 min-h-[54px] shadow-sm">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center shadow-md shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center shadow-md shrink-0 border border-white/10">
             <Bot className="w-4 h-4 text-white" />
           </div>
           <div>
             <span className="font-bold text-xs text-white block leading-tight">Assistant OS</span>
             {user && (
-              <span className="text-[10px] text-slate-400 block leading-tight truncate max-w-[150px]">
+              <span className="text-[10px] text-zinc-400 block leading-tight truncate max-w-[150px]">
                 {user.name}
               </span>
             )}
@@ -179,7 +179,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               className="px-2.5 py-1 min-h-[36px] bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs rounded-full font-semibold flex items-center gap-1.5 active:scale-95"
             >
               <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-              {pendingCount} Pending
+              <span>{pendingCount} Pending</span>
             </button>
           )}
 
@@ -188,7 +188,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={onLogout}
               aria-label="Sign out"
               title="Sign out"
-              className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center text-slate-400 hover:text-rose-400 transition-colors rounded-lg"
+              className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors rounded-lg"
             >
               <LogOut className="w-4 h-4" />
             </button>
@@ -197,7 +197,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       </header>
 
       {/* Mobile / Tablet Bottom Navigation Bar (screen < 1024px) */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur border-t border-slate-800 px-1 py-1 z-30 flex justify-around items-center min-h-[56px] shadow-2xl">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-zinc-950/95 backdrop-blur border-t border-white/[0.08] px-1 py-1 z-30 flex justify-around items-center min-h-[58px] shadow-[0_-4px_25px_rgba(0,0,0,0.6)]">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = currentTab === item.id;
@@ -206,16 +206,16 @@ export const Navbar: React.FC<NavbarProps> = ({
               key={item.id}
               id={`mobile-nav-item-${item.id}`}
               onClick={() => onSelectTab(item.id)}
-              className={`flex-1 flex flex-col items-center justify-center py-1.5 px-1 min-h-[48px] rounded-lg text-[10px] font-medium transition-all relative ${
+              className={`flex-1 flex flex-col items-center justify-center py-1.5 px-1 min-h-[48px] rounded-xl text-[10px] font-medium transition-all relative ${
                 isActive
-                  ? 'text-sky-400 font-semibold'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'text-sky-300 font-semibold bg-white/[0.05]'
+                  : 'text-zinc-400 hover:text-zinc-200'
               }`}
             >
               <div className="relative">
-                <Icon className={`w-5 h-5 mb-0.5 ${isActive ? 'text-sky-400' : 'text-slate-400'}`} />
+                <Icon className={`w-5 h-5 mb-0.5 transition-colors ${isActive ? 'text-sky-400' : 'text-zinc-400'}`} />
                 {item.badge && (
-                  <span className="absolute -top-1 -right-2 min-w-[16px] h-4 bg-amber-500 text-slate-950 font-bold text-[9px] rounded-full flex items-center justify-center px-1 shadow-sm">
+                  <span className="absolute -top-1 -right-2 min-w-[16px] h-4 bg-amber-500 text-zinc-950 font-bold text-[9px] rounded-full flex items-center justify-center px-1 shadow-sm">
                     {item.badge}
                   </span>
                 )}
