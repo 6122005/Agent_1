@@ -1,0 +1,15 @@
+{
+  "name": "ai-assistant-root",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI Personal & Business Assistant (MERN Stack)",
+  "scripts": {
+    "dev": "npm run dev --prefix server",
+    "dev:server": "npm run dev --prefix server",
+    "dev:client": "npm run dev --prefix client",
+    "build:server": "npm run build --prefix server",
+    "build:client": "npm run build --prefix client",
+    "build": "npm run build:server && npm run build:client",
+    "test": "npm test --prefix server"
+  }
+}
