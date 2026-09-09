@@ -114,19 +114,17 @@ export const Navbar: React.FC<NavbarProps> = ({
           </nav>
         </div>
 
-        {/* Bottom Section: User Profile & Logout */}
-        <div className="pt-4 border-t border-slate-800/80">
-
-          {/* User Profile Card */}
+        {/* Bottom Section: Seamless Integrated User Profile & Logout */}
+        <div className="pt-3.5 mt-auto border-t border-white/[0.08]">
           {user && (
-            <div className="p-2.5 rounded-xl bg-slate-950/40 border border-slate-800/60 flex items-center justify-between gap-2.5">
+            <div className="p-2 rounded-lg hover:bg-zinc-800/40 transition-colors flex items-center justify-between gap-2.5">
               <div className="flex items-center gap-2.5 min-w-0">
                 {user.avatarUrl ? (
                   <img
                     src={user.avatarUrl}
                     alt={user.name}
                     referrerPolicy="no-referrer"
-                    className="w-8 h-8 rounded-lg object-cover border border-slate-700/80 shrink-0"
+                    className="w-8 h-8 rounded-lg object-cover border border-white/[0.1] shrink-0"
                   />
                 ) : (
                   <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-sky-600 to-indigo-600 text-white font-bold text-xs flex items-center justify-center border border-sky-500/30 shrink-0">
@@ -134,10 +132,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </div>
                 )}
                 <div className="min-w-0">
-                  <p className="text-xs font-semibold text-white truncate leading-tight">
+                  <p className="text-xs font-semibold text-zinc-200 truncate leading-tight">
                     {user.name || 'User'}
                   </p>
-                  <p className="text-[10px] text-slate-400 truncate leading-tight mt-0.5">
+                  <p className="text-[10px] text-zinc-400 truncate leading-tight mt-0.5">
                     {user.email}
                   </p>
                 </div>
@@ -148,9 +146,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                   onClick={onLogout}
                   title="Sign out"
                   aria-label="Sign out"
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors shrink-0"
+                  className="p-1.5 rounded-lg text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors shrink-0"
                 >
-                  <LogOut className="w-4 h-4" />
+                  <LogOut className="w-3.5 h-3.5" />
                 </button>
               )}
             </div>
