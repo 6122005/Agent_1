@@ -163,7 +163,7 @@ export const App: React.FC = () => {
               </div>
             </div>
             <a
-              href="/api/auth/google"
+              href={`${(import.meta.env.VITE_API_URL || '').replace(/\/$/, '')}/api/auth/google`}
               className="px-4 py-2 min-h-[40px] bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs rounded-xl shadow-md transition-all flex items-center gap-1.5 shrink-0 active:scale-95"
             >
               Connect Workspace <ExternalLink className="w-3.5 h-3.5" />
