@@ -8,13 +8,17 @@ import { reminderScheduler } from './jobs/reminderJobs.js';
 async function bootstrap() {
   let mongoUri = env.MONGODB_URI;
 
-  if (!mongoUri) {
+  if (!mongoUri && process.env.NODE_ENV !== 'production') {
     try {
       logger.info('No MONGODB_URI set in .env. Starting embedded in-memory MongoDB for local development...');
-      const { MongoMemoryServer } = await import('mongodb-memory-server');
-      const mongod = await MongoMemoryServer.create();
-      mongoUri = mongod.getUri();
-      logger.info('✅ Embedded in-memory MongoDB started successfully');
+      // @ts-ignore
+      const memPkg = 'mongodb-memory-server';
+      const memModule: any = await (import(memPkg) as any).catch(() => null);
+      if (memModule?.MongoMemoryServer) {
+        const mongod = await memModule.MongoMemoryServer.create();
+        mongoUri = mongod.getUri();
+        logger.info('✅ Embedded in-memory MongoDB started successfully');
+      }
     } catch (err: any) {
       logger.warn(`Could not start in-memory MongoDB (${err.message}). Defaulting to localhost:27017.`);
       mongoUri = 'mongodb://localhost:27017/ai-assistant';
@@ -28,14 +32,20 @@ async function bootstrap() {
     });
     logger.info('✅ Connected to MongoDB successfully');
   } catch (err: any) {
-    logger.warn(`Could not connect to MongoDB Atlas (${err.message}). Starting in-memory fallback MongoDB for local development...`);
-    try {
-      const { MongoMemoryServer } = await import('mongodb-memory-server');
-      const mongod = await MongoMemoryServer.create();
-      await mongoose.connect(mongod.getUri());
-      logger.info('✅ Connected to fallback in-memory MongoDB successfully');
-    } catch (fallbackErr: any) {
-      logger.error('Failed to start fallback in-memory MongoDB', { error: fallbackErr.message });
+    logger.warn(`Could not connect to MongoDB Atlas (${err.message}).`);
+    if (process.env.NODE_ENV !== 'production') {
+      try {
+        // @ts-ignore
+        const memPkg = 'mongodb-memory-server';
+        const memModule: any = await (import(memPkg) as any).catch(() => null);
+        if (memModule?.MongoMemoryServer) {
+          const mongod = await memModule.MongoMemoryServer.create();
+          await mongoose.connect(mongod.getUri());
+          logger.info('✅ Connected to fallback in-memory MongoDB successfully');
+        }
+      } catch (fallbackErr: any) {
+        logger.error('Failed to start fallback in-memory MongoDB', { error: fallbackErr.message });
+      }
     }
   }
 
