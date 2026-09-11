@@ -119,10 +119,11 @@ async function bootstrap() {
     }
   }
 
-  const port = parseInt(env.PORT, 10) || 5001;
-  const server = app.listen(port, () => {
-    logger.info(`🚀 Assistant server running in ${env.NODE_ENV} mode on port ${port}`);
-    logger.info(`👉 API Health: http://localhost:${port}/api/health`);
+  const port = parseInt(process.env.PORT || env.PORT, 10) || 5001;
+  const host = '0.0.0.0';
+  const server = app.listen(port, host, () => {
+    logger.info(`🚀 Assistant server running in ${env.NODE_ENV} mode on ${host}:${port}`);
+    logger.info(`👉 API Health: /api/health`);
     logger.info(`👉 Frontend Origin: ${env.CLIENT_URL}`);
   });
 
@@ -130,11 +131,11 @@ async function bootstrap() {
     if (err.code === 'EADDRINUSE') {
       const altPort = port + 1;
       logger.warn(`Port ${port} in use, attempting port ${altPort}...`);
-      app.listen(altPort, () => {
+      app.listen(altPort, host, () => {
         logger.info(`🚀 Assistant server running on fallback port ${altPort}`);
       });
     } else {
-      logger.error('Server listen error', { error: err.message });
+      logger.error('Server error', { error: err.message });
     }
   });
 }
