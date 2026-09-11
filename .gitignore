@@ -3,6 +3,7 @@
 *.env
 .env.example
 env.example
+prompt.md
 
 # Dependencies
 node_modules/
