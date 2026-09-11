@@ -20,5 +20,5 @@ describe('GeminiProvider & Intent Parsing', () => {
 
     const res2 = await provider.classifyIntent('schedule a meeting with real estate client');
     expect(res2.intent).toBe('create_event');
-  });
+  }, 15000);
 });
