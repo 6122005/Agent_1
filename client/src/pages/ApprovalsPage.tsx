@@ -102,8 +102,8 @@ export const ApprovalsPage: React.FC<ApprovalsPageProps> = ({
               </div>
               <div className="text-center sm:text-left space-y-1">
                 <h3 className="text-sm font-bold text-zinc-100">Approvals Queue is Clear</h3>
-                <p className="text-xs text-zinc-400 leading-relaxed max-w-lg">
-                  No outbound emails, meeting invites, or CRM actions are currently waiting for authorization. Any drafts created by your assistant will wait here until you confirm.
+                <p className="text-xs text-zinc-400 mt-1 max-w-sm">
+                  No outbound emails or meeting invites are currently waiting for authorization. Any drafts created by your assistant will wait here until you confirm.
                 </p>
               </div>
             </div>

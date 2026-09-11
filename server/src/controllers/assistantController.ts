@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import { agentOrchestrator } from '../services/orchestrator/agentOrchestrator.js';
 import { calendarService } from '../services/calendar/calendarService.js';
 import { tasksService } from '../services/tasks/tasksService.js';
-import { hubspotProvider } from '../services/crm/hubspotProvider.js';
 
 export class AssistantController {
   async chat(req: Request, res: Response): Promise<void> {
@@ -36,15 +35,6 @@ export class AssistantController {
       const userId = req.user!.userId;
       const tasks = await tasksService.listTasks(userId);
       res.json(tasks);
-    } catch (err: any) {
-      res.status(500).json({ error: err.message });
-    }
-  }
-
-  async getCRMLeads(req: Request, res: Response): Promise<void> {
-    try {
-      const leads = await hubspotProvider.listStaleLeads(7);
-      res.json(leads);
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }

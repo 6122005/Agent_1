@@ -4,7 +4,6 @@ import { Setting } from '../models/Setting.js';
 import { gmailService } from '../services/gmail/gmailService.js';
 import { calendarService } from '../services/calendar/calendarService.js';
 import { tasksService } from '../services/tasks/tasksService.js';
-import { hubspotProvider } from '../services/crm/hubspotProvider.js';
 import { telegramService } from '../services/telegram/telegramService.js';
 import { whatsappService } from '../services/whatsapp/whatsappService.js';
 import { GeminiProvider } from '../services/llm/geminiProvider.js';
@@ -80,17 +79,10 @@ export class SummaryScheduler {
       tasks = await tasksService.listTasks(userId);
     } catch {}
 
-    if (isEvening) {
-      try {
-        staleLeads = await hubspotProvider.listStaleLeads(setting.hubspotStaleDays || 7);
-      } catch {}
-    }
-
     const digestText = await llm.generateDigest({
       events,
       emails,
       tasks,
-      staleLeads,
       isEvening,
     });
 

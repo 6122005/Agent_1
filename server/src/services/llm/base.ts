@@ -7,7 +7,6 @@ export interface IntentResult {
     | 'list_events'
     | 'create_task'
     | 'list_tasks'
-    | 'crm_followup'
     | 'general_chat'
     | 'unknown';
   workspace: 'business' | 'personal';
@@ -29,7 +28,6 @@ export interface LLMProvider {
     events: any[];
     emails: any[];
     tasks: any[];
-    staleLeads?: any[];
     isEvening: boolean;
   }): Promise<string>;
 }

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Sparkles, Mail, Calendar, CheckSquare, Users } from 'lucide-react';
+import { Send, Bot, User, Sparkles, Mail, Calendar, CheckSquare } from 'lucide-react';
 import { api } from '../lib/api.js';
 
 interface ChatMessage {
@@ -18,7 +18,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ onApprovalCreated }) => 
     {
       id: '1',
       sender: 'assistant',
-      text: 'Hello! I am your AI Executive Assistant. Ask me to summarize your emails, prepare a draft, schedule a meeting, or check on HubSpot leads.',
+      text: 'Hello! I am your AI Executive Assistant. Ask me to summarize your emails, prepare a draft, schedule a meeting, or manage your tasks.',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     },
   ]);
@@ -79,7 +79,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ onApprovalCreated }) => 
     { label: 'Summarize unread emails', icon: Mail, prompt: 'Summarize my unread emails' },
     { label: "Today's calendar schedule", icon: Calendar, prompt: 'What meetings do I have today?' },
     { label: 'Quick add property task', icon: CheckSquare, prompt: 'Add task: Review property valuation' },
-    { label: 'Check stale CRM leads', icon: Users, prompt: 'Check stale HubSpot leads' },
+    { label: 'Draft email reply', icon: Send, prompt: 'Draft a reply to my latest email' },
   ];
 
   return (

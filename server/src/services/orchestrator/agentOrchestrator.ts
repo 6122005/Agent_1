@@ -5,7 +5,6 @@ import { approvalService } from '../approval/approvalService.js';
 import { gmailService } from '../gmail/gmailService.js';
 import { calendarService } from '../calendar/calendarService.js';
 import { tasksService } from '../tasks/tasksService.js';
-import { hubspotProvider } from '../crm/hubspotProvider.js';
 import { ActivityLog } from '../../models/ActivityLog.js';
 import { ChannelType, WorkspaceType } from '../../models/PendingAction.js';
 import { logger } from '../../utils/logger.js';
@@ -381,30 +380,12 @@ export class AgentOrchestrator {
         }
       }
 
-      case 'crm_followup': {
-        try {
-          const stale = await hubspotProvider.listStaleLeads(7);
-          if (stale.length === 0) {
-            return { text: '🤝 All HubSpot contacts have been contacted within the last 7 days!' };
-          }
-          let text = `🤝 *HubSpot Leads Needing Follow-up (${stale.length}):*\n\n`;
-          stale.slice(0, 5).forEach((lead, idx) => {
-            text += `*${idx + 1}. ${lead.name}* (${lead.email})\n`;
-          });
-          text += `\n💡 _Say "Draft follow-up to [Name]" to prepare an outreach message._`;
-          return { text, actionTaken: 'crm_followup', data: stale };
-        } catch (err: any) {
-          return { text: `⚠️ CRM error: ${err.message}` };
-        }
-      }
-
       default: {
         return {
           text: `👋 I'm your AI Assistant. I can help you with:\n\n` +
             `• 📬 *Gmail:* "Summarize my unread emails" or "Draft a reply"\n` +
             `• 📅 *Calendar:* "Schedule a meeting with client" or "What's on my schedule?"\n` +
-            `• 📝 *Tasks:* "Add task: Review lease contract" or "List my tasks"\n` +
-            `• 🤝 *CRM:* "Check leads to follow up on"\n\n` +
+            `• 📝 *Tasks:* "Add task: Review lease contract" or "List my tasks"\n\n` +
             `_All email sending requires your explicit "YES SEND" approval first._`,
         };
       }

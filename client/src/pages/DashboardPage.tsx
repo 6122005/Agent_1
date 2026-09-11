@@ -80,7 +80,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
               Executive Overview
             </h2>
             <p className="text-xs text-zinc-400 max-w-xl leading-relaxed">
-              Real-time AI coordination across Gmail, Google Calendar, Tasks, and CRM with strict human authorization.
+              Real-time AI coordination across Gmail, Google Calendar, and Tasks with strict human authorization.
             </p>
           </div>
 

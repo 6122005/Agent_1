@@ -274,16 +274,15 @@ Possible intents:
 - 'list_events': view schedule / meetings
 - 'create_task': create a to-do item or reminder
 - 'list_tasks': view to-dos / tasks
-- 'crm_followup': follow up with client or check HubSpot leads
 - 'general_chat': conversational or other request
 
 Workspace rule:
-- Business: client meetings, property inquiries, contracts, HubSpot, professional emails.
+- Business: client meetings, property inquiries, contracts, professional emails.
 - Personal: gym, personal doctor appointments, family reminders, personal errands.
 
 Return strictly valid JSON:
 {
-  "intent": "summarize_emails" | "draft_reply" | "send_approval" | "create_event" | "list_events" | "create_task" | "list_tasks" | "crm_followup" | "general_chat",
+  "intent": "summarize_emails" | "draft_reply" | "send_approval" | "create_event" | "list_events" | "create_task" | "list_tasks" | "general_chat",
   "workspace": "business" | "personal",
   "entities": {
      "title": string or null,
@@ -312,12 +311,11 @@ User Message:
     events: any[];
     emails: any[];
     tasks: any[];
-    staleLeads?: any[];
     isEvening: boolean;
   }): Promise<string> {
     const timeOfDay = data.isEvening ? 'Evening' : 'Morning';
     if (!this.genAI) {
-      return `🌅 ${timeOfDay} Summary:\n- Meetings: ${data.events.length} scheduled\n- Unread Important Emails: ${data.emails.length}\n- Pending Tasks: ${data.tasks.length}\n${data.staleLeads?.length ? `- Stale CRM Leads: ${data.staleLeads.length}` : ''}`;
+      return `🌅 ${timeOfDay} Summary:\n- Meetings: ${data.events.length} scheduled\n- Unread Important Emails: ${data.emails.length}\n- Pending Tasks: ${data.tasks.length}`;
     }
 
     try {
@@ -330,7 +328,6 @@ Data:
 - Events: ${JSON.stringify(data.events.slice(0, 5))}
 - Unread Important Emails: ${JSON.stringify(data.emails.slice(0, 5))}
 - Pending Tasks: ${JSON.stringify(data.tasks.slice(0, 5))}
-- Stale CRM Leads to follow up: ${JSON.stringify((data.staleLeads || []).slice(0, 5))}
 
 Keep the summary under 200 words.`;
 
@@ -339,7 +336,7 @@ Keep the summary under 200 words.`;
       });
     } catch (err: any) {
       logger.warn('Gemini generateDigest fallback triggered:', err.message);
-      return `🌅 ${timeOfDay} Summary:\n- Meetings: ${data.events.length} scheduled\n- Unread Important Emails: ${data.emails.length}\n- Pending Tasks: ${data.tasks.length}\n${data.staleLeads?.length ? `- Stale CRM Leads: ${data.staleLeads.length}` : ''}`;
+      return `🌅 ${timeOfDay} Summary:\n- Meetings: ${data.events.length} scheduled\n- Unread Important Emails: ${data.emails.length}\n- Pending Tasks: ${data.tasks.length}`;
     }
   }
 }
