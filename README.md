@@ -2,7 +2,7 @@
 
 A production-grade AI personal and business assistant for real-estate firms, built on the **MERN** stack (Node.js + Express + TypeScript, MongoDB with Mongoose, React + Vite + TypeScript + Tailwind CSS).
 
-Connects to **Gmail, Google Calendar, Google Tasks, Telegram, WhatsApp (Meta Business Cloud API / Twilio), and HubSpot CRM**, with a strict human-in-the-loop approval gate.
+Connects to **Gmail, Google Calendar, Google Tasks, Telegram, with a strict human-in-the-loop approval gate.
 
 ---
 
