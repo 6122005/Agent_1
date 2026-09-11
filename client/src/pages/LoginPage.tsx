@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckCircle2, Lock, AlertCircle, Sparkles, Layers } from 'lucide-react';
+import { CheckCircle2, Lock, Sparkles, Layers } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
   const handleGoogleSignIn = () => {
@@ -26,17 +26,6 @@ export const LoginPage: React.FC = () => {
             <p className="text-xs text-slate-400">
               Orchestrate emails, schedule meetings, manage tasks, and draft messages with strict human approvals.
             </p>
-          </div>
-
-          {/* Testing Mode Banner */}
-          <div className="flex items-start gap-3 p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-300">
-            <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-            <div className="space-y-0.5">
-              <span className="font-semibold block text-amber-200">Testing Mode Active</span>
-              <p className="text-[11px] text-amber-300/90 leading-relaxed">
-                Only Google accounts pre-approved in Google Cloud Console's Test Users list can sign in during this phase. Contact the administrator to authorize your email.
-              </p>
-            </div>
           </div>
 
           {/* Sign In with Google Button */}

@@ -17,9 +17,16 @@ export const App: React.FC = () => {
   const [pendingItems, setPendingItems] = useState<PendingItem[]>([]);
   const [googleConnected, setGoogleConnected] = useState(false);
 
-  // Authenticate user via httpOnly cookie on mount
+  // Authenticate user via httpOnly cookie or token param on mount
   const checkAuth = useCallback(async () => {
     try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const tokenFromUrl = urlParams.get('token');
+      if (tokenFromUrl) {
+        localStorage.setItem('assistant_token', tokenFromUrl);
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+
       const res = await api.get('/auth/me');
       if (res.data?.user) {
         setCurrentUser(res.data.user);

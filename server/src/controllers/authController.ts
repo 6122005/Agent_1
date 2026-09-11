@@ -56,11 +56,11 @@ export class AuthController {
         { expiresIn: '24h' }
       );
 
-      // Set httpOnly secure cookie
+      // Set httpOnly secure cookie with sameSite none for cross-domain compatibility
       res.cookie('assistant_session', jwtToken, {
         httpOnly: true,
-        secure: env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        secure: true,
+        sameSite: 'none',
         maxAge: 24 * 60 * 60 * 1000,
         path: '/',
       });
@@ -70,8 +70,8 @@ export class AuthController {
         email: user.email,
       });
 
-      // Clean redirect to frontend home without tokens in URL
-      res.redirect(`${env.CLIENT_URL}/`);
+      // Redirect to frontend passing token in param for cross-origin local storage storage
+      res.redirect(`${env.CLIENT_URL}/?token=${encodeURIComponent(jwtToken)}`);
     } catch (err: any) {
       logger.error('Google OAuth callback failed', { error: err.message });
       res.redirect(`${env.CLIENT_URL}/?auth_error=${encodeURIComponent(err.message)}`);
