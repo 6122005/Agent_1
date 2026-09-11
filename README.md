@@ -1,5 +1,8 @@
 # AI Personal Assistant (MERN Stack)
 
+> 🚀 **Live Demo / Preview:** [https://agent-1-weld.vercel.app/](https://agent-1-weld.vercel.app/)  
+> ⚡ **Backend API (Render):** `https://agent-1-wbr5.onrender.com`
+
 A production-grade AI personal and business executive assistant, built on the **MERN** stack (Node.js + Express + TypeScript, MongoDB Atlas with Mongoose, React + Vite + TypeScript + Tailwind CSS).
 
 Connects seamlessly to **Gmail, Google Calendar, Google Tasks, and Telegram**, with a strict human-in-the-loop approval gate for all critical communications.
@@ -129,22 +132,22 @@ Navigate to **http://localhost:5173** to access the dashboard.
    - **Build Command:** `npm install && npm run build`
    - **Start Command:** `npm run start`
    - **Environment Variables:** Populate all production keys from `.env`.
-   - Update `CLIENT_URL` to your live Vercel URL.
-   - Update `GOOGLE_REDIRECT_URI` to `https://<render-backend-url>/api/auth/google/callback`.
+   - Set `CLIENT_URL` = `https://agent-1-weld.vercel.app`
+   - Set `GOOGLE_REDIRECT_URI` = `https://agent-1-wbr5.onrender.com/api/auth/google/callback`
 
 ### B. Deploy Frontend to Vercel (Free Web Hosting)
 1. Import the repository on [Vercel.com](https://vercel.com).
 2. Select **Root Directory:** `client`.
 3. Set Environment Variable:
-   - `VITE_API_URL` = `https://<render-backend-url>`
-4. Deploy to receive your production URL.
+   - `VITE_API_URL` = `https://agent-1-wbr5.onrender.com`
+4. Deploy to receive your production URL (`https://agent-1-weld.vercel.app`).
 
 ### C. Google Cloud Console Configuration
-1. Under **APIs & Services > Credentials > OAuth 2.0 Client IDs**:
-   - **Authorized JavaScript Origins:** Add your Vercel URL (e.g., `https://your-assistant.vercel.app`).
-   - **Authorized Redirect URIs:** Add `https://<render-backend-url>/api/auth/google/callback`.
-2. Under **OAuth Consent Screen**:
-   - Set Publishing Status to **"Publish App" (In Production)** so any Google user can authenticate directly without manual onboarding.
+1. Under **Google Auth Platform > Clients > Client ID for Web application**:
+   - **Authorized JavaScript Origins:** Add `https://agent-1-weld.vercel.app`
+   - **Authorized Redirect URIs:** Add `https://agent-1-wbr5.onrender.com/api/auth/google/callback`
+2. Under **Google Auth Platform > Audience**:
+   - Publishing Status is set to **"In production"** so any Google user can authenticate directly without manual onboarding.
 
 ---
 
