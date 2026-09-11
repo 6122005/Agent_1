@@ -28,7 +28,15 @@ async function bootstrap() {
     });
     logger.info('✅ Connected to MongoDB successfully');
   } catch (err: any) {
-    logger.error(`Could not connect to MongoDB: ${err.message}. Please provide a valid MONGODB_URI in .env.`);
+    logger.warn(`Could not connect to MongoDB Atlas (${err.message}). Starting in-memory fallback MongoDB for local development...`);
+    try {
+      const { MongoMemoryServer } = await import('mongodb-memory-server');
+      const mongod = await MongoMemoryServer.create();
+      await mongoose.connect(mongod.getUri());
+      logger.info('✅ Connected to fallback in-memory MongoDB successfully');
+    } catch (fallbackErr: any) {
+      logger.error('Failed to start fallback in-memory MongoDB', { error: fallbackErr.message });
+    }
   }
 
   // Start background schedulers (node-cron for summaries & proactive reminders)
