@@ -3,7 +3,8 @@ import { CheckCircle2, Lock, AlertCircle, Sparkles, Layers } from 'lucide-react'
 
 export const LoginPage: React.FC = () => {
   const handleGoogleSignIn = () => {
-    window.location.href = '/api/auth/google';
+    const baseUrl = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+    window.location.href = `${baseUrl}/api/auth/google`;
   };
 
   return (
